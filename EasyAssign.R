@@ -46,6 +46,9 @@ ref.excel <- "Microsat_mentella_fasciatus_ Mux1_03042019.xls"
 assign.excel <- "BIN-SEB_Maria_Senay_Mux1_tot_2019.xlsx"
 
 # Nothing to change here
+ref.file  <- ref.excel %>% str_replace(".xlsx", ".gen") %>% str_replace(".xls", ".gen")
+ref.dir   <- file.path("01_Ref_Genotypes" ,ref.excel %>% str_remove(".xlsx") %>% str_remove(".xls"))
+
 assign.file  <- assign.excel %>% str_replace(".xlsx", ".gen") %>% str_replace(".xls", ".gen")
 assign.dir   <- file.path("03_Results" ,assign.excel %>% str_remove(".xlsx") %>% str_remove(".xls"))
 
@@ -63,20 +66,20 @@ assign.df <- merge.MSAT.alleles(data=assign.geno, locus=locus, na="NA")
 assign.df
 
 # Step 3: Save as genpop
-write.genpop(fn = file.path("01_Ref_Genotypes","Ref.gen"), 
+write.genpop(fn = file.path("01_Ref_Genotypes",ref.file), 
              data = ref.df, 
-             pop = "SP", 
-             ind = "IND",
+             pop = "POP", 
+             ind = "ID",
              locus = locus)
 
 write.genpop(fn = file.path("02_Data_to_Assign",assign.file), 
              data = assign.df, 
-             ind = "IND",
+             ind = "ID",
              locus = locus)
 
 # Step 4: Upload in the rigth format
 
-ref.gen    <- read.Genepop( file.path("01_Ref_Genotypes","Ref.gen"), pop.names=unique(geno.df$SP), haploid = FALSE)
+ref.gen    <- read.Genepop( file.path("01_Ref_Genotypes",ref.file), pop.names=unique(ref.df$SP), haploid = FALSE)
 assign.gen <- read.Genepop( file.path("02_Data_to_Assign",assign.file), pop.names="POP1", haploid = FALSE)
 
 # Evaluate baseline -------------------------------------------------------
@@ -85,23 +88,25 @@ assign.gen <- read.Genepop( file.path("02_Data_to_Assign",assign.file), pop.name
 
 ref.gen.rd <- reduce.allele(ref.gen, p = 0.95)
 
-
 # NOTE: it is not necessary to run this part each time ...
 
 # Compute cross-validation statistics
 
+# Make a directory
+dir.create(ref.dir)
+
 assign.MC(ref.gen.rd, train.inds=c(0.5, 0.7, 0.9), train.loci=c(0.5, 1),
-           loci.sample="fst", iterations=30, model="svm", dir="01_Ref_Genotypes/MC_cross-validation/")
+           loci.sample="fst", iterations=30, model="svm", dir=paste0(file.path(ref.dir,"MC_cross-validation"),"/"))
 
 assign.kfold(ref.gen.rd, k.fold=c(3, 4, 5), train.loci=c(0.5, 1), 
-             loci.sample="random", model="lda", dir="01_Ref_Genotypes/kfold_cross-validation/")
+             loci.sample="random", model="lda", dir=paste0(file.path(ref.dir,"kfold_cross-validation"),"/"))
 
-accuMC <- accuracy.MC(dir = "01_Ref_Genotypes/MC_cross-validation/")
+accuMC <- accuracy.MC(dir = paste0(file.path(ref.dir,"MC_cross-validation"),"/"))
 
 accuracy.plot(accuMC, pop = "all")
 
 
-accuKF <- accuracy.kfold(dir = "01_Ref_Genotypes/kfold_cross-validation/")
+accuKF <- accuracy.kfold(dir = paste0(file.path(ref.dir,"kfold_cross-validation"),"/"))
 
 accuracy.plot(accuKF, pop = "all")
 
