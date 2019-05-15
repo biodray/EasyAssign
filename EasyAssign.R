@@ -41,7 +41,7 @@ for(i in 1:length( list.files("./04_Functions") )){
 
 locus <- c("SEB25", "SEB31", "SEB33", "SEB9")
 
-ref.excel <- "Microsat_mentella_fasciatus_ Mux1_03042019.xls"
+ref.excel <- "STD_Assignation_men-Fasc_3130_EP_14052019.xlsx"
 
 assign.excel <- "BIN-SEB_Maria_Senay_Mux1_tot_2019.xlsx"
 
@@ -66,7 +66,7 @@ assign.df <- merge.MSAT.alleles(data=assign.geno, locus=locus, na="NA")
 assign.df
 
 # Step 3: Save as genpop
-write.genpop(fn = file.path("01_Ref_Genotypes",ref.file), 
+write.genpop(fn = file.path("01_Ref_Genotypes", ref.file), 
              data = ref.df, 
              pop = "POP", 
              ind = "ID",
@@ -117,7 +117,7 @@ accuracy.plot(accuKF, pop = "all")
 dir.create(assign.dir)
 
 # 1.Perform assignment test using genetic data and naive Bayes
-assign.X( x1=ref.gen.rd, x2=assign.gen, dir=paste0(file.path(assign.dir,"naiveBayes"),"/"), model="naiveBayes")
+assign.X( x1=ref.gen, x2=assign.gen, dir=paste0(file.path(assign.dir,"naiveBayes"),"/"), model="naiveBayes")
 
 # 2.Perform assignment test using integrated data and decision tree
 assign.X( x1=ref.gen.rd, x2=assign.gen, dir=paste0(file.path(assign.dir,"tree"),"/"),  model="tree")
